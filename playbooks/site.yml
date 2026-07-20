@@ -1,0 +1,17 @@
+---
+# Run order: common hardening on every node in the cluster, then install
+# k3s on the server. Add a "k3s-agent" role + play here later when agents
+# exist under [k3s_agents] in the inventory — this file's structure doesn't
+# need to change, just grow a second play targeting k3s_agents.
+
+- name: Bootstrap all cluster nodes
+  hosts: k3s_cluster
+  become: true
+  roles:
+    - common
+
+- name: Install k3s server
+  hosts: k3s_server
+  become: true
+  roles:
+    - k3s-server
