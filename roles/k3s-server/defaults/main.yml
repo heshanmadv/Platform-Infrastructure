@@ -1,0 +1,13 @@
+---
+# Pin a specific k3s release (e.g. "v1.29.4+k3s1") once you've settled on
+# one; leave empty to install whatever get.k3s.io currently serves as stable.
+k3s_version: ""
+
+# Where the kubeconfig pulled from the Pi ends up on the control machine.
+# This path is gitignored (see .gitignore) — never commit it.
+kubeconfig_fetch_dest: "{{ playbook_dir }}/../kubeconfig/k3s.yaml"
+
+# k3s server runs with NO extra taint/disable flags: on a single-node
+# cluster the server must keep scheduling normal workloads since there are
+# no agents to offload onto. Do not add --node-taint here.
+k3s_server_extra_args: ""

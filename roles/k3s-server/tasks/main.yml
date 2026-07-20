@@ -1,0 +1,47 @@
+---
+- name: Download k3s install script
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s-install.sh
+    mode: "0755"
+
+- name: Install k3s server (single-node, workload scheduling stays enabled)
+  ansible.builtin.command: /tmp/k3s-install.sh
+  args:
+    creates: /usr/local/bin/k3s
+  environment:
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+    INSTALL_K3S_EXEC: "server {{ k3s_server_extra_args }}"
+
+- name: Wait for k3s node to report Ready
+  # Single-node cluster: check items[0] rather than a node name, since the
+  # node registers under its OS hostname, not the Ansible inventory alias.
+  ansible.builtin.command: k3s kubectl get nodes -o jsonpath="{.items[0].status.conditions[?(@.type=='Ready')].status}"
+  register: node_ready
+  until: node_ready.stdout == "True"
+  retries: 24
+  delay: 5
+  changed_when: false
+
+- name: Ensure local kubeconfig directory exists
+  ansible.builtin.file:
+    path: "{{ kubeconfig_fetch_dest | dirname }}"
+    state: directory
+    mode: "0700"
+  delegate_to: localhost
+  become: false
+
+- name: Fetch kubeconfig to the control machine
+  ansible.builtin.fetch:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "{{ kubeconfig_fetch_dest }}"
+    flat: true
+    mode: "0600"
+
+- name: Point the fetched kubeconfig at the Pi's real address
+  ansible.builtin.replace:
+    path: "{{ kubeconfig_fetch_dest }}"
+    regexp: 'https://127\.0\.0\.1:6443'
+    replace: "https://{{ ansible_host }}:6443"
+  delegate_to: localhost
+  become: false
