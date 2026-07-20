@@ -1,0 +1,5 @@
+---
+# Single-node today: this is the only member of k3s_server. When agents are
+# added under [k3s_agents] in hosts.ini, this node keeps running as the
+# server — no changes needed here.
+k3s_role: server
