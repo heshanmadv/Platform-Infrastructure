@@ -5,7 +5,7 @@ k3s_version: ""
 
 # Where the kubeconfig pulled from the Pi ends up on the control machine.
 # This path is gitignored (see .gitignore) — never commit it.
-kubeconfig_fetch_dest: "{{ playbook_dir }}/../kubeconfig/k3s.yaml"
+kubeconfig_fetch_dest: "{{ playbook_dir }}/../fetched/kubeconfig.yaml"
 
 # k3s server runs with NO extra taint/disable flags: on a single-node
 # cluster the server must keep scheduling normal workloads since there are
