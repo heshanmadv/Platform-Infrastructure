@@ -1,0 +1,22 @@
+---
+common_timezone: "UTC"
+
+common_packages:
+  - curl
+  - vim
+  - htop
+  - unattended-upgrades
+  - ufw
+  - chrony
+
+# Ports that must stay open on every cluster node (server + agents) for k3s
+# to function: SSH, the k3s/kube API, kubelet, and flannel VXLAN.
+common_ufw_allowed_ports:
+  - "22/tcp"
+  - "6443/tcp"
+  - "10250/tcp"
+  - "8472/udp"
+
+# Off by default so a node with only password auth configured doesn't get
+# locked out. Flip to true once you've confirmed key-based SSH login works.
+common_disable_ssh_password_auth: false
