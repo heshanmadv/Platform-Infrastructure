@@ -7,7 +7,17 @@ k3s_version: ""
 # This path is gitignored (see .gitignore) — never commit it.
 kubeconfig_fetch_dest: "{{ playbook_dir }}/../fetched/kubeconfig.yaml"
 
-# k3s server runs with NO extra taint/disable flags: on a single-node
-# cluster the server must keep scheduling normal workloads since there are
-# no agents to offload onto. Do not add --node-taint here.
-k3s_server_extra_args: ""
+# k3s server runs with NO taint flag: on a single-node cluster the server
+# must keep scheduling normal workloads since there are no agents to
+# offload onto. Do not add --node-taint here.
+#
+# Traefik IS disabled below, though: Terraform (Phase 1) installs
+# ingress-nginx as the cluster's ingress controller. k3s bundles Traefik
+# as its own default ingress controller, and if left enabled it would
+# also request a LoadBalancer Service via k3s's built-in ServiceLB —
+# fighting ingress-nginx for ports 80/443 on the node. ServiceLB itself
+# stays enabled; ingress-nginx's LoadBalancer Service depends on it.
+k3s_disable_components:
+  - traefik
+
+k3s_server_extra_args: "{{ k3s_disable_components | map('regex_replace', '^(.*)$', '--disable \\1') | join(' ') }}"

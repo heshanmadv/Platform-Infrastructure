@@ -81,3 +81,13 @@ path and group_vars auto-loading work.
   to the inventory file's own directory (and separately, relative to the
   playbook's directory) — a `group_vars/` sitting as a sibling of both
   `inventory/` and `playbooks/` would silently never be picked up.
+- k3s's bundled Traefik ingress controller is disabled at install time
+  (`k3s_disable_components: [traefik]` in `roles/k3s-server/defaults/main.yml`),
+  because Terraform (Phase 1) installs `ingress-nginx` as the cluster's
+  ingress controller instead — leaving both enabled would have them fight
+  over ports 80/443 on the node's LoadBalancer IP. k3s's own ServiceLB
+  stays enabled; `ingress-nginx`'s LoadBalancer Service depends on it.
+  **If you already ran `playbooks/site.yml` before this was added**, Traefik
+  is still running: `kubectl -n kube-system delete helmchart traefik` on the
+  Pi (or re-run the k3s install script with `INSTALL_K3S_EXEC="server
+  --disable traefik"`), then re-run the playbook.
