@@ -1,0 +1,42 @@
+# Copy this to terraform.tfvars (gitignored) and adjust for your setup.
+
+kubeconfig_path = "../../../ansible/fetched/kubeconfig.yaml"
+
+argocd_ingress_enabled = false
+argocd_ingress_host    = ""
+
+# SD-card-backed Pi: kept deliberately small. See terraform/modules/monitoring
+# for the retention/size safety nets (Prometheus size-based backstop, Loki
+# ingestion rate limits) that keep these bounds honest under real load.
+monitoring_retention_days        = 5
+monitoring_prometheus_storage_gi = 2
+monitoring_loki_storage_gi       = 2
+
+# Consul: service-discovery + KV only. consul_connect_enabled turns on the
+# service mesh (sidecar injection + mTLS) later, once multiple services
+# actually need mTLS between them — leave it false until then.
+consul_server_storage_gi = 1
+consul_connect_enabled   = false
+
+# One entry per tenant namespace. The values below are homelab-scale
+# starting points for a single Pi — tune them to what the FYP app actually
+# needs; they are not meant to be load-bearing production numbers.
+tenants = {
+  fyp = {
+    labels = {
+      team = "fyp"
+    }
+    resource_quota = {
+      requests_cpu    = "1"
+      requests_memory = "1Gi"
+      limits_cpu      = "2"
+      limits_memory   = "2Gi"
+    }
+    limit_range_default = {
+      cpu_request    = "100m"
+      cpu_limit      = "500m"
+      memory_request = "128Mi"
+      memory_limit   = "512Mi"
+    }
+  }
+}
